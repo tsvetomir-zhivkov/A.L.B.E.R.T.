@@ -1,0 +1,17 @@
+services:
+  server:
+
+  database:
+    image: postgres:latest
+    env_file:
+      - project.env
+
+  database_migrations:
+    image: flyway/flyway:latest-alpine
+    volumes:
+      - ./database_migrations:/flyway/sql
+    env_file: 
+      - project.env
+    depends_on:
+      - database
+    command: -connectRetries=60 -baselineOnMigrate=true migrate
