@@ -1,0 +1,5 @@
+CREATE TABLE sensor_logs(
+	sensor_id INTEGER NOT NULL REFERENCES sensors(sensor_id) ON DELETE CASCADE,
+	measurement NUMERIC NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

@@ -1,10 +1,10 @@
 services:
-  server:
-
   database:
+    container_name: wt_database
     image: postgres:latest
     env_file:
       - project.env
+    
 
   database_migrations:
     image: flyway/flyway:latest-alpine
