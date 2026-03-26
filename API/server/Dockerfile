@@ -1,5 +1,6 @@
+
 # Tell what image we are using
-FROM dhi.io/deno:latest
+FROM denoland/deno:latest
 
 # Create the work directory
 WORKDIR /app
@@ -24,7 +25,7 @@ EXPOSE 8000
 # - environment variable access
 # - network access
 # - watching for changes (reactivity)
-CMD [ "run", "--allow-env", "--allow-net", "--watch", "app-run.json" ]
+CMD [ "run", "--allow-env", "--allow-net", "--watch", "app-run.js" ]
 
 
 
