@@ -31,7 +31,7 @@ export const createOneSensor = async (sensor) => {
 }
 
 // Deletes a specific sensor from the table by id
-// Parameters: an id of a sensor
+// Parameters: a wind turbine id and sensor id
 // Returns: the deleted sensor or undefined if the row did not existed before deletion
 export const deleteOneSensor = async (turbineID, sensorID) => {
     const res = await sql

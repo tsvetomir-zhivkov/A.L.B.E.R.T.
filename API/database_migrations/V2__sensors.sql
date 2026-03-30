@@ -1,4 +1,3 @@
-
 CREATE TABLE sensors (
 	sensor_id INTEGER GENERATED ALWAYS AS IDENTITY,
 	turbine_id INTEGER NOT NULL REFERENCES wind_turbines(turbine_id) ON DELETE CASCADE,
@@ -6,5 +5,5 @@ CREATE TABLE sensors (
 	unit TEXT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	PRIMARY KEY (turbine_id, sensor_id)
+	PRIMARY KEY (sensor_id, turbine_id)
 );

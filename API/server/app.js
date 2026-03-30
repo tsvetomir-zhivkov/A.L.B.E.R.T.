@@ -4,12 +4,17 @@ import * as turbineController from "./controllers/turbineController.js";
 import * as sensorController from "./controllers/sensorController.js";
 import * as turbineModeController from "./controllers/turbineModeController.js";
 import * as connectionController from "./controllers/connectionController.js";
+import * as sensorLogsController from "./controllers/sensorLogsController.js";
 
 const app = new Hono();
 
 // GET requests endpoints not matching /api/wind_turbines/:wind_turbineID
 app.get("/api/wind_turbines/modes", turbineModeController.readAll); // working mode
 app.get("/api/wind_turbines/connections", connectionController.readAll); // connection info
+
+// GET requests endpoints not matching /api/wind_turbines/:wind_turbineID/sensors/:sensorID (sensors' logs)
+app.get("/api/wind_turbines/:wind_turbineID/sensors/logs/all", sensorLogsController.readAll);
+app.get("/api/wind_turbines/:wind_turbineID/sensors/logs/last", sensorLogsController.readAllLast);
 
 // Wind turbines
 app.get("/api/wind_turbines", turbineController.readAll);
@@ -36,6 +41,11 @@ app.get("/api/wind_turbines/:wind_turbineID/connection", connectionController.re
 app.post("/api/wind_turbines/:wind_turbineID/connection", connectionController.createOne);
 app.delete("/api/wind_turbines/:wind_turbineID/connection", connectionController.deleteOne);
 app.put("/api/wind_turbines/:wind_turbineID/connection", connectionController.updateOne);
+
+// Sensors' logs
+app.get("/api/wind_turbines/:wind_turbineID/sensors/:sensorID/logs", sensorLogsController.readOne);
+app.post("/api/wind_turbines/:wind_turbineID/sensors/:sensorID/logs", sensorLogsController.createOne);
+app.delete("/api/wind_turbines/:wind_turbineID/sensors/:sensorID/logs", sensorLogsController.deleteOne);
 
 
 export default app;
