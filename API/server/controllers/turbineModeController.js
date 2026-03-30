@@ -1,18 +1,18 @@
 // Imports the repository to communicate with the database
-import * as turbineRepository from "../repositories/turbineRepository.js";
+import * as turbineModeRepository from "../repositories/turbineModeRepository.js";
 
 // Using universal function names for ease when creating the handlers.
 
 export const readAll = async (c) => {
     // Fetches all rows from the table
-    const res = await turbineRepository.readAllWindTurbines();
+    const res = await turbineModeRepository.readAllWindTurbineModes();
 
     // If there are not rows in the table, return code 200
     if (res.length === 0) {
-        return c.json({message: "No wind turbines found"}, 200);
+        return c.json({message: "No working modes found for wind turbines"}, 200);
     }
 
-    // If at least one wind turbine exists, then return code 200
+    // If at least one wind turbine's working mode exists, then return code 200
     return c.json(res, 200);
 }
 
@@ -27,27 +27,33 @@ export const readOne = async (c) => {
     }
 
     // Fetches one row from the table
-    const res = await turbineRepository.readOneWindTurbine(wtID);
+    const res = await turbineModeRepository.readOneWindTurbineMode(wtID);
 
     // If res is undefined, return code 404 - not found
     if (!res) {
-        return c.json({message: "Wind turbine not found"}, 404);
+        return c.json({message: "Wind turbine's working mode not found"}, 404);
     }
 
-    // Returns the required wind turbine if found
+    // Returns the required wind turbine's working mode if found
     return c.json(res, 200);
 }
 
 export const createOne = async (c) => {
-    // Uses the provided data from the user
-    const wt = await c.req.json()
+    // Uses the parameters provided in the url
+    const wtID = Number(await c.req.param("wind_turbineID"));
+    const mode = await c.req.param("turbine_mode");
 
-    // Checks if the required data is given
-    if (!wt.height || !wt.rotor_diameter || !wt.weight) {
-        return c.json({message: "Missing wind turbine data"}, 400);
+    // Checks whether wtID is a valid number
+    if (Number.isNaN(wtID)) {
+        return c.json({message: "Invalid wind turbine id"}, 400);
     }
 
-    const res = await turbineRepository.createWindTurbine(wt);
+    // Checks whether the mode is either auto or manual
+    if (mode !== "auto" && mode !== "manual") {
+        return c.json({message: "Invalid wind turbine mode"}, 400);
+    }
+    
+    const res = await turbineModeRepository.createWindTurbineMode(wtID, mode);
 
     // Checks if an error is found
     if (!res) {
@@ -69,19 +75,20 @@ export const deleteOne = async (c) => {
     }
 
     // Deletes the specific row and returns it
-    const res = await turbineRepository.deleteWindTurbine(wtID);
+    const res = await turbineModeRepository.deleteWindTurbineMode(wtID);
 
     // Checks if the row existed before deletion
     if (!res) {
-        return c.json({message: "Wind turbine not found"}, 404);
+        return c.json({message: "Wind turbine's working mode not found"}, 404);
     }
 
     return c.json(res, 200);
 }
 
 export const updateOne = async (c) => {
-    // Uses the given parameter in the url
+    // Uses the parameters provided in the url
     const wtID = Number(await c.req.param("wind_turbineID"));
+    const mode = await c.req.param("turbine_mode");
 
     // Checks whether wtID is a valid number
     if (Number.isNaN(wtID)) {
@@ -89,20 +96,16 @@ export const updateOne = async (c) => {
         return c.json({message: "Invalid wind turbine id"}, 400);
     }
 
-    // Checks the content given in the request
-    const header = await c.req.header("Content-Type");
-
-    // Use the json content if provided
-    let wt = {};
-    if (header == "application/json") {
-        // Uses the given data from the json object/file
-        wt = await c.req.json();
+    // Checks whether the mode is either auto or manual
+    if (mode !== "auto" && mode !== "manual") {
+        return c.json({message: "Invalid wind turbine mode"}, 400);
     }
+
     // Updates the specific row and returns it
-    const res = await turbineRepository.updateWindTurbine(wtID, wt);
+    const res = await turbineModeRepository.updateWindTurbine(wtID, mode);
 
     if (!res) {
-        return c.json({message: "Wind turbine not found"}, 404);
+        return c.json({message: "Wind turbine's working mode not found"}, 404);
     }
 
     return c.json(res,200);

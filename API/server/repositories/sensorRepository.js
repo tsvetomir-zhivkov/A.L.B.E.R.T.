@@ -45,21 +45,10 @@ export const deleteOneSensor = async (turbineID, sensorID) => {
 // Returns: the updated row
 export const updateSensor = async (turbineID, sensorID, sensor) => {
 
-    // Checks whether new data is provided
-    if (Object.keys(sensor).length == 0) {
-        // Updates only changed_at parameter
-        const res = await sql
-        `UPDATE sensors SET changed_at = NOW()
-        WHERE sensor_id = ${sensorID} AND turbine_id = ${turbineID} RETURNING *;`;
-
-        return res[0];
-    }
-    else {
-        // Updates all parameters provided from the user
-        const res = await sql
-        `UPDATE sensors SET ${sql(sensor)}, changed_at = NOW()
-        WHERE sensor_id = ${sensorID} AND turbine_id = ${turbineID} RETURNING *;`;
-
-        return res[0];
-    }
+    // Updates all parameters provided from the user (turbine_id is always provided)
+    const res = await sql
+    `UPDATE sensors SET ${sql(sensor)}, changed_at = NOW()
+    WHERE sensor_id = ${sensorID} AND turbine_id = ${turbineID} RETURNING *;`;
+  
+    return res[0];
 }

@@ -2,6 +2,7 @@ import { Hono } from "@hono/hono";
 
 import * as turbineController from "./controllers/turbineController.js";
 import * as sensorController from "./controllers/sensorController.js";
+import * as turbineModeController from "./controllers/turbineModeController.js";
 
 const app = new Hono();
 
@@ -19,5 +20,11 @@ app.post("/api/wind_turbines/:wind_turbineID/sensors", sensorController.createOn
 app.delete("/api/wind_turbines/:wind_turbineID/sensors/:sensorID", sensorController.deleteOne);
 app.put("/api/wind_turbines/:wind_turbineID/sensors/:sensorID", sensorController.updateOne);
 
+// Wind turbines' modes
+app.get("/api/turbine_modes", turbineModeController.readAll);
+app.get("/api/wind_turbines/:wind_turbineID/mode", turbineModeController.readOne);
+app.post("/api/wind_turbines/:wind_turbineID/mode/:turbine_mode", turbineModeController.createOne);
+app.delete("/api/wind_turbines/:wind_turbineID/mode", turbineModeController.deleteOne);
+app.put("/api/wind_turbines/:wind_turbineID/mode/:turbine_mode", turbineModeController.updateOne);
 
 export default app;
