@@ -1,4 +1,4 @@
-// Import the repository to communicate with the database
+// Imports the repository to communicate with the database
 import * as turbineRepository from "../repositories/turbineRepository.js";
 
 // Using universal function names for ease when creating the handlers.
@@ -7,9 +7,9 @@ export const readAll = async (c) => {
     // Fetches all rows from the table
     const res = await turbineRepository.readAllWindTurbines();
 
-    // If there are not rows in the table, return code 204
-    if (!res) {
-        return c.json({message: "No wind turbines found"}, 204);
+    // If there are not rows in the table, return code 200
+    if (res.length === 0) {
+        return c.json({message: "No wind turbines found"}, 200);
     }
 
     // If at least one wind turbine exists, then return code 200
@@ -39,12 +39,12 @@ export const readOne = async (c) => {
 }
 
 export const createOne = async (c) => {
-    // Uses the given data from the json object/file
+    // Uses the provided data from the user
     const wt = await c.req.json()
 
     // Checks if the required data is given
-    if (!wt.name || !wt.height || !wt.rotor_diameter || !wt.weight) {
-        return c.json({message: "Missing data about the wind turbine"}, 400);
+    if (!wt.height || !wt.rotor_diameter || !wt.weight) {
+        return c.json({message: "Missing wind turbine data"}, 400);
     }
 
     const res = await turbineRepository.createWindTurbine(wt);

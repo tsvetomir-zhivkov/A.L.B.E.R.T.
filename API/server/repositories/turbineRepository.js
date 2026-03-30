@@ -6,40 +6,38 @@ import postgres from "postgres";
 // variables needed for it to operate correctly.
 const sql = postgres();
 
-// Retrieves all rows from the table
-// Returns: all rows currently stored in the table
+// Retrieves all wind turbines from the table
+// Returns: all wind turbines currently stored in the table
 export const readAllWindTurbines = async () => {
     return await sql 
     `SELECT * FROM wind_turbines;`;
 }
 
-// Retrieves a specific row from the table by id
-// Parameters: an id of a row
-// Returns: the row corresponding to the id
+// Retrieves a specific wind turbine from the table by id
+// Parameters: an id of a wind turbine
+// Returns: the wind turbine corresponding to the id
 export const readOneWindTurbine = async (wtID) => {
     const res = await sql 
-    `SELECT * FROM wind_turbines WHERE turbine_id = ${wtID};`
+    `SELECT * FROM wind_turbines WHERE turbine_id = ${wtID};`;
 
     // postgres always returns a list including all relevant rows,
     // thus return only the first element of the list
     return res[0];
 }
 
-// Creates a new row and returns it if created successfully.
-// Parameters: an object containing the required data.
-// Returns: the created row
+// Creates a new wind turbine and returns it if created successfully
+// Parameters: an object containing the required data
+// Returns: the created wind turbine
 export const createWindTurbine = async (wt) => {
     const res = await sql 
-    `INSERT INTO wind_turbines (name, height, rotor_diameter, weight)
-     VALUES (${wt.name}, ${wt.height}, ${wt.rotor_diameter}, ${wt.weight}) RETURNING *;`;
+    `INSERT INTO wind_turbines ${sql(wt)} RETURNING *;`;
 
     return res[0];
 }
 
-// Deletes a specific row from the table by id
-// Parameters: an id of a row
-// Returns: the deleted row or undefined if the row did 
-// not existed before deletion.
+// Deletes a specific wind turbine from the table by id
+// Parameters: an id of a wind turbine
+// Returns: the deleted wind turbine or undefined if the row did not existed before deletion
 export const deleteWindTurbine = async (wtID) => {
     const res = await sql 
     `DELETE FROM wind_turbines WHERE turbine_id = ${wtID} RETURNING *;`;
@@ -47,12 +45,12 @@ export const deleteWindTurbine = async (wtID) => {
     return res[0];
 }
 
-// Updates a specific row from the table
-// Parameters: an id of a row, which is required, and an object containing the new data
-// Returns: the updated row
+// Updates a specific wind turbine from the table
+// Parameters: an id of a wind turbine and an object containing updated data
+// Returns: the updated wind turbine
 export const updateWindTurbine = async (wtID, wt) => {
 
-    // Checks if new data is not given
+    // Checks whether new data is provided
     if (Object.keys(wt).length === 0) {
         // Updated only the changed_at parameter
         const res = await sql
@@ -63,7 +61,7 @@ export const updateWindTurbine = async (wtID, wt) => {
         return res[0];
     }
     else {
-        // Updates all parameters given in the object wt
+        // Updates all parameters provided from the user
         const res = await sql
         `UPDATE wind_turbines
         SET ${sql(wt)}, changed_at = NOW()
