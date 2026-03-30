@@ -118,11 +118,14 @@ export const updateOne = async (c) => {
         return c.json({message: "Invalid sensor id"}, 400);
     }
 
-    // Uses the provided data from the user
-    const sensor = await c.req.json();
+    // Checks the content given in the request
+    const header = await c.req.header("Content-Type");
 
-    if (!sensor.unit) {
-        return c.json({message: "Missing sensor data"}, 400);
+    // Use the json content if provided
+    let sensor = {};
+    if (header == "application/json") {
+        // Uses the given data from the json object/file
+        sensor = await c.req.json();
     }
 
     sensor.turbine_id = wtID;
