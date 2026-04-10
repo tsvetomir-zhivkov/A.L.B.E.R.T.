@@ -1,6 +1,13 @@
 import postgres from "postgres";
 
-const sql = postgres();
+const sql = postgres({
+  host: Deno.env.get("PGHOST"),
+  database:  Deno.env.get("PGDATABASE"),
+  username: Deno.env.get("PGUSER"),
+  password: Deno.env.get("PGPASSWORD"),
+  port: Number(Deno.env.get("PGPORT")),
+  ssl: Deno.env.get("PGSSLMODE"),
+});
 
 // Retrieves all wind turbines' connection information from the database
 // Returns: the connection data

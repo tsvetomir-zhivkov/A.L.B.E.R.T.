@@ -2,9 +2,17 @@ import postgres from "postgres";
 
 // wt = wind turbine
 
-// Postgres will automatically read the environment 
-// variables needed for it to operate correctly.
-const sql = postgres();
+// Explicity providing environment variables (including SSL settings) as an object to ensure a secure connection
+// Thee connection to the Azure PostgreSQL database fails without this, because the function
+// does not automatically read PGSSLMODE
+const sql = postgres({
+  host: Deno.env.get("PGHOST"),
+  database:  Deno.env.get("PGDATABASE"),
+  username: Deno.env.get("PGUSER"),
+  password: Deno.env.get("PGPASSWORD"),
+  port: Number(Deno.env.get("PGPORT")),
+  ssl: Deno.env.get("PGSSLMODE"),
+});
 
 // Retrieves all wind turbines from the table
 // Returns: all wind turbines currently stored in the table

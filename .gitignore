@@ -1,6 +1,4 @@
 # Environment variables
 *.env
 
-# Deno dependencies
-deno.json
 deno.lock

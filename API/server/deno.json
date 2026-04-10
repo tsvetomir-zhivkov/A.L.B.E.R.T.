@@ -1,0 +1,7 @@
+{
+    "imports":
+    {
+        "@hono/hono": "jsr:@hono/hono@4.12.9",
+	    "postgres": "https://deno.land/x/postgresjs/mod.js"
+    }
+}
