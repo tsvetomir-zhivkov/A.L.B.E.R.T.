@@ -1,8 +1,11 @@
 // Including a header guard
-#ifndef ALBERT.H
-#define ALBERT.H
+#ifndef ALBERT_H
+#define ALBERT_H
 
 #include <AS5600.h>
+
+#define AS5600_SDA_PIN 21
+#define AS5600_SCL_PIN 22
 
 #define AS5600_MAX_ANGLE 4096
 #define AS5600_MIN_ANGLE 0
@@ -25,4 +28,5 @@ float AS5600_readAngle(AS5600 &as5600);
 
 int AS5600_validate_data(uint16_t raw_angle);
 
+void stopProcess();
 #endif
