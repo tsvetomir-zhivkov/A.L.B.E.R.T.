@@ -8,6 +8,9 @@ AS5600 as5600;
 
 HTTPClient http;
 
+// An error indicator
+bool success = 1;
+
 // @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbineid and sensorid are fine
 
 void setup() {
@@ -37,12 +40,15 @@ void setup() {
 
 void loop() {
   
-  /*
-  float wind_angle = AS5600_readAngle(as5600);
-  Serial.print("ANGLE: ");
-  Serial.println(wind_angle);
-  delay(2000);
-  */
+  if (success) {
+    float wind_angle = AS5600_readAngle(as5600);
+    Serial.print("ANGLE: ");
+    Serial.println(wind_angle);
+    success = writeMeasurement(http, as5600_id, wind_angle);
+    delay(5000);
+  }
+  
+
 }
 
 
@@ -53,10 +59,10 @@ void AS5600_connection_status(AS5600 &as5600) {
 
   int status = as5600.isConnected();
   if (status) {
-    Serial.println("SUCCESS: AS5600 connected successfully");
+    Serial.println("\nSUCCESS: AS5600 connected successfully");
   }
   else {
-    Serial.println("FAIL: AS5600 was not detected");
+    Serial.println("\nFAIL: AS5600 was not detected");
   }
 
 }
@@ -82,7 +88,7 @@ float AS5600_readAngle(AS5600 &as5600) {
     return wind_angle_degrees;
   }
   else {
-    Serial.println("ERROR: The data provided by the magnetic encoder is not valid");
+    Serial.println("\nERROR: The data provided by the magnetic encoder is not valid");
     return 0;
   }
 

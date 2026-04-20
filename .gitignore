@@ -1,5 +1,7 @@
 # Environment variables
 *.env
 
+*.swp
 .vscode
 deno.lock
+
