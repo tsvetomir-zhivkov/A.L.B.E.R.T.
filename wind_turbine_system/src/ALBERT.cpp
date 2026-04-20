@@ -11,6 +11,10 @@ HTTPClient http;
 // An error indicator
 bool success = 1;
 
+// parallel programming (non-blocking)
+unsigned long lastMillis = 0;
+const unsigned long AS5600_read = 2000;
+
 // @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbineid and sensorid are fine
 
 void setup() {
@@ -24,7 +28,6 @@ void setup() {
 
   while(WiFi.status() != WL_CONNECTED){
     Serial.print(".");
-    delay(100);
   }
 
   Serial.println("\nConnected to the Wifi network");
@@ -39,15 +42,20 @@ void setup() {
 }
 
 void loop() {
-  
+
   if (success) {
-    float wind_angle = AS5600_readAngle(as5600);
-    Serial.print("ANGLE: ");
-    Serial.println(wind_angle);
-    success = writeMeasurement(http, as5600_id, wind_angle);
-    delay(5000);
+
+    if (millis() - lastMillis >= AS5600_read) {
+
+      lastMillis = millis();
+      float wind_angle = AS5600_readAngle(as5600);
+      Serial.print("ANGLE: ");
+      Serial.println(wind_angle);
+      //success = writeMeasurement(http, as5600_id, wind_angle);
+
+    }
   }
-  
+ 
 
 }
 
