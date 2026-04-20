@@ -1,15 +1,12 @@
 #include <Arduino.h>
 #include "ALBERT.h"
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <Arduino_JSON.h>
+#include "ALBERT_API.h"
 
 // Initializing all required variables.
 
-const char* ssid = "iPhone";
-const char* password = "dZ3g-kJJ1-VRpa-7F8B";
-
 AS5600 as5600;
+
+HTTPClient http;
 
 // @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbineid and sensorid are fine
 
@@ -17,7 +14,7 @@ void setup() {
   
   Serial.begin(115200);
 
-  // Initializes the Wire library and joins the I2C bus as a controller
+  // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
   WiFi.begin(ssid, password);
@@ -29,46 +26,17 @@ void setup() {
 
   Serial.println("\nConnected to the Wifi network");
 
-  // Checks the connection status.
+  // Check the connection status.
   AS5600_connection_status(as5600);
+
+  // Check the connection between wind turbine and serverAPI
+  albert_connection_status(http);
+
 
 }
 
 void loop() {
   
-  // Create HTTPClient instance
-  HTTPClient http;
-
-  // serverPath
-  String serverPath = "https://albert2026.azurewebsites.net/api/wind_turbines/2";
-
-  // Initializing the connection between the server and the ESP32
-  // c_str() returns a pointer to the same string null-terminated
-  http.begin(serverPath.c_str());
-
-  // Send HTTP request
-  int httpResponseCode = http.GET();
-
-
-  // Gets http response code
-  if (httpResponseCode != 0)  {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
-    String payload = http.getString();
-    Serial.println(payload);
-
-    JSONVar object = JSON.parse(payload);
-
-    Serial.println(object["name"]);
-  }
-  else {
-    Serial.print("Error");
-  }
-
-  // Free resources
-  http.end();
-
-  delay(10000);
   /*
   float wind_angle = AS5600_readAngle(as5600);
   Serial.print("ANGLE: ");
@@ -123,7 +91,7 @@ float AS5600_readAngle(AS5600 &as5600) {
 // Validates that AS5600 works correctly
 // @params angle - angle data provided by the magnetic encoder AS5600
 // @return 0 - failure , 1 - sensor read data correctly
-int AS5600_validate_data(uint16_t raw_angle) {
+bool AS5600_validate_data(uint16_t raw_angle) {
   // If AS5600 returns only 0s or 4096s for t consecutive readings.
   if (reading_angle_max >= READING_ERROR || reading_angle_min >= READING_ERROR){
     return 0;
