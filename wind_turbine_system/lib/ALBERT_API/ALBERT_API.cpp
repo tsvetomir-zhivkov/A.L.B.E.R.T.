@@ -5,8 +5,12 @@ const char* password = "dZ3g-kJJ1-VRpa-7F8B";
 
 String serverPath = "https://albert2026.azurewebsites.net/api";
 
+// Wind turbines
 uint16_t albert_id = 4;
+
+// Sensors
 uint16_t as5600_id = 1;
+uint16_t stepper_motor_id = 2;
 
 bool albert_connection_status(HTTPClient &http) {
 
@@ -14,17 +18,23 @@ bool albert_connection_status(HTTPClient &http) {
     bool verification_status_wt = verifyWindTurbine(http);
 
     if (!verification_status_wt) {
-        Serial.println("\nVerification error");
+        Serial.println("\nVerification error (A.L.B.E.R.T.)");
         return 0;
     }
 
     Serial.println("\n................................");
 
     // Ensure the sensors exist in the database
-    bool verification_status_s = verifySensor(http, as5600_id);
+    bool verification_status_as5600 = verifySensor(http, as5600_id);
 
-    if (!verification_status_s) {
-        Serial.println("\nVerification error");
+    if (!verification_status_as5600) {
+        Serial.println("\nVerification error (AS5600)");
+    }
+
+    bool verification_status_sm = verifySensor(http, stepper_motor_id);
+
+    if (!verification_status_sm) {
+        Serial.println("\nVerification error (stepper_motor)");
     }
 
     //@todo Fix server mode endpoint and database

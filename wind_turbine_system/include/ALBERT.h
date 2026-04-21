@@ -24,7 +24,7 @@ int reading_angle_max = 0;
 
 void AS5600_connection_status(AS5600 &as5600);
 
-float AS5600_readAngle(AS5600 &as5600);
+bool AS5600_readAngle(AS5600 &as5600);
 
 bool AS5600_validate_data(uint16_t raw_angle);
 

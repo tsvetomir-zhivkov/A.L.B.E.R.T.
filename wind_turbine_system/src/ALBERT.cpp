@@ -10,11 +10,13 @@ AS5600 as5600;
 HTTPClient http;
 
 // An error indicator
-bool success = 0;
+bool success = 1;
 
 // parallel programming (non-blocking)
-unsigned long lastMillis = 0;
-const unsigned long AS5600_read = 2000;
+unsigned long lastMillisAS5600 = 0;
+const unsigned long AS5600_read = 3000;
+
+float AS5600_angle = 0;
 
 // @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbineid and sensorid are fine
 
@@ -22,9 +24,7 @@ void setup() {
   
   Serial.begin(115200);
 
-  Serial.println("HELLO!");
-
-  /*
+  
   // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
@@ -36,38 +36,34 @@ void setup() {
   }
 
   Serial.println("\nConnected to the Wifi network");
+  
 
   // Check the connection status.
   AS5600_connection_status(as5600);
 
   // Check the connection between wind turbine and serverAPI
   albert_connection_status(http);
-  */
-  initializeTMC2209();
-  
-  
 
+  initializeTMC2209(); 
 
 }
 
 void loop() {
 
-  rotateStepperMotor(200);
-  Serial.println("1");
+  // @todo success trigger, when success turns to 0, stop program
   if (success) {
 
-    if (millis() - lastMillis >= AS5600_read) {
-
-      lastMillis = millis();
-      float wind_angle = AS5600_readAngle(as5600);
-      Serial.print("ANGLE: ");
-      Serial.println(wind_angle);
-      //success = writeMeasurement(http, as5600_id, wind_angle);
-
+    if (millis() - lastMillisAS5600 >= AS5600_read) {
+      success = AS5600_readAngle(as5600);
+      //success = writeMeasurement(http, as5600_id, AS5600_angle);
     }
-  }
+    
+    rotateStepperMotor(AS5600_angle);
+    Serial.println(currentAngle);
 
+  }
 }
+
 
 
 // Verifies communication with the AS5600.
@@ -85,10 +81,10 @@ void AS5600_connection_status(AS5600 &as5600) {
 
 }
 
-// Reads angle from AS5600 magnetic encoder.
+// Reads angle from AS5600 magnetic encoder; reads data every 3 seconds
 // @param as5600 - Reference to an initialized AS5600 instance
-// @return the angle measured by the AS5600 encoder
-float AS5600_readAngle(AS5600 &as5600) {
+// @return 0-failure, 1-success
+bool AS5600_readAngle(AS5600 &as5600) {
 
   // Reads the data provided by the magnetic encoder AS5600.
   uint16_t wind_angle = as5600.readAngle();
@@ -103,13 +99,16 @@ float AS5600_readAngle(AS5600 &as5600) {
 
   // Checks whether the data provided by the magnetic encoder is valid.
   if (wind_angle_degrees <= 360.0 & wind_angle_degrees >= 0.0) {
-    return wind_angle_degrees;
+
+    Serial.print("\nWind angle: ");
+    Serial.println(wind_angle_degrees);
+    AS5600_angle = wind_angle_degrees;
+    return 1;
   }
   else {
     Serial.println("\nERROR: The data provided by the magnetic encoder is not valid");
     return 0;
   }
-
 }
 
 // Validates that AS5600 works correctly

@@ -12,4 +12,7 @@
 void initializeTMC2209();
 void rotateStepperMotor(float angle);
 float convertAngle(float angle);
+
+extern float currentAngle;
+
 #endif

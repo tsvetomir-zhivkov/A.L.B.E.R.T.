@@ -25,6 +25,7 @@ extern String serverPath;
 // Unique wind turbine and sensor IDs
 extern uint16_t albert_id;
 extern uint16_t as5600_id;
+extern uint16_t stepper_motor_id;
 
 
 bool albert_connection_status(HTTPClient &http);
