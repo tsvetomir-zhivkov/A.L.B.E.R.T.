@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "ALBERT.h"
 #include "ALBERT_API.h"
+#include "TMC2209.h"
 
 // Initializing all required variables.
 
@@ -9,7 +10,7 @@ AS5600 as5600;
 HTTPClient http;
 
 // An error indicator
-bool success = 1;
+bool success = 0;
 
 // parallel programming (non-blocking)
 unsigned long lastMillis = 0;
@@ -21,6 +22,9 @@ void setup() {
   
   Serial.begin(115200);
 
+  Serial.println("HELLO!");
+
+  /*
   // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
@@ -28,6 +32,7 @@ void setup() {
 
   while(WiFi.status() != WL_CONNECTED){
     Serial.print(".");
+    delay(500);
   }
 
   Serial.println("\nConnected to the Wifi network");
@@ -37,12 +42,18 @@ void setup() {
 
   // Check the connection between wind turbine and serverAPI
   albert_connection_status(http);
+  */
+  initializeTMC2209();
+  
+  
 
 
 }
 
 void loop() {
 
+  rotateStepperMotor(200);
+  Serial.println("1");
   if (success) {
 
     if (millis() - lastMillis >= AS5600_read) {
@@ -55,7 +66,6 @@ void loop() {
 
     }
   }
- 
 
 }
 
