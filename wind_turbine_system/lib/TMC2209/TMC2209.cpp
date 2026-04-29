@@ -33,7 +33,6 @@ void rotateStepperMotor(float targetAngle) {
     float angleOffset = round((targetAngle - currentAngle) * 2.0) / 2.0;
 
     angleOffset = convertAngle(angleOffset);
-
     int steps = round((angleOffset / ANGLE_PER_STEP));
     
     // Change direction if needed
@@ -78,3 +77,46 @@ float convertAngle(float angle) {
     return angle;
 }
 
+
+// Calibrate the stepper motor using pulses
+// @param angle in range -360 and 360
+void calibrateStepperMotor(float angle) {
+
+    // Angle difference
+    float angleOffset = (angle - currentAngle);
+
+    int steps = round((angleOffset / ANGLE_PER_STEP));
+    
+    // Change direction if needed
+    if (steps >= 0) {
+        if (direction == LOW) {
+            direction = HIGH;
+            digitalWrite(DIR_PIN, direction);
+        }
+    }
+    else {
+        if (direction == HIGH) {
+            direction = LOW;
+            digitalWrite(DIR_PIN, direction);
+        }
+    } 
+
+    steps = abs(steps);
+
+    // Rotate stepper motor if steps are provided
+    if (steps != 0) {
+
+            digitalWrite(STEP_PIN, HIGH);
+            delayMicroseconds(1000);
+
+            digitalWrite(STEP_PIN, LOW);
+            delayMicroseconds(1000);
+
+            currentAngle += ANGLE_PER_STEP * (angleOffset/abs(angleOffset));
+    }
+}
+
+
+void resetCurrentAngle() {
+    currentAngle = 0;
+}

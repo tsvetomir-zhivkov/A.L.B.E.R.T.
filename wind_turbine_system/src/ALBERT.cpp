@@ -14,11 +14,17 @@ bool success = 1;
 
 // parallel programming (non-blocking)
 unsigned long lastMillisAS5600 = 0;
-const unsigned long AS5600_read = 3000;
+const unsigned long AS5600_read = 1000;
 
 float AS5600_angle = 0;
 
-// @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbineid and sensorid are fine
+// Switches used for calibration
+int rightSwitchPressed = 0;
+int leftSwitchPressed = 0;
+float leftMaxValue;
+float rightMaxValue;
+
+// @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbine id and sensor id are fine
 
 void setup() {
   
@@ -28,6 +34,7 @@ void setup() {
   // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
+  /*
   WiFi.begin(ssid, password);
 
   while(WiFi.status() != WL_CONNECTED){
@@ -35,16 +42,22 @@ void setup() {
     delay(500);
   }
 
+  */
   Serial.println("\nConnected to the Wifi network");
   
+  // Initialize switches
+  pinMode(SWITCH_LEFT_PIN, INPUT_PULLUP);
+  pinMode(SWITCH_RIGHT_PIN, INPUT_PULLUP);
 
   // Check the connection status.
   AS5600_connection_status(as5600);
 
   // Check the connection between wind turbine and serverAPI
-  albert_connection_status(http);
+  //albert_connection_status(http);
 
   initializeTMC2209(); 
+
+  initializeStepperMotor();
 
 }
 
@@ -54,13 +67,11 @@ void loop() {
   if (success) {
 
     if (millis() - lastMillisAS5600 >= AS5600_read) {
+      lastMillisAS5600 = millis();
       success = AS5600_readAngle(as5600);
       //success = writeMeasurement(http, as5600_id, AS5600_angle);
     }
-    
     rotateStepperMotor(AS5600_angle);
-    Serial.println(currentAngle);
-
   }
 }
 
@@ -137,4 +148,68 @@ bool AS5600_validate_data(uint16_t raw_angle) {
 
 void stopProcess() {
   Serial.println("Program executed");
+  exit(0);
+}
+
+int isSwitchPressed(uint8_t pin) {
+
+  // Check whether the switch is pressed
+  int readSwitch = digitalRead(pin);
+
+  // If a switch is pressed, stop the rotor from moving
+  if (readSwitch == LOW) {
+    
+    Serial.println("\nMaximum angle reached.");
+    return 1;
+  }
+  return 0;
+
+}
+
+void initializeStepperMotor() {
+
+  // Move left until press the left switch, (indicates the maximum value)
+  while (!leftSwitchPressed) {
+
+    Serial.println(currentAngle);
+    // Make a circle in that direction until the max value is found
+    calibrateStepperMotor(360.0);
+
+    int leftSwitch = isSwitchPressed(SWITCH_LEFT_PIN);
+    
+    if (leftSwitch) {
+      leftSwitchPressed = 1;
+      leftMaxValue = currentAngle;
+    }
+  }
+
+  // Move right until press the right switch, (indicates the maximum value)
+  while (!rightSwitchPressed) {
+
+    Serial.println(currentAngle);
+
+    // Make a circle in that direction until the max value is found
+    calibrateStepperMotor(-360);
+
+    int rightSwitch = isSwitchPressed(SWITCH_RIGHT_PIN);
+    
+    if (rightSwitch) {
+      rightSwitchPressed = 1;
+      rightMaxValue = currentAngle;
+    }
+  }
+
+  if (currentAngle < 0) {
+    currentAngle += 360;
+  }
+  float startPoint = (leftMaxValue + rightMaxValue) / 2;
+
+  Serial.print("START POINT ");
+  Serial.println(startPoint);
+
+  while (abs(currentAngle - startPoint) >= 0.5) {
+    rotateStepperMotor(startPoint);
+  }
+  Serial.println(currentAngle);
+  resetCurrentAngle();
 }
