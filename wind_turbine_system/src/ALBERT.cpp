@@ -18,14 +18,6 @@ const unsigned long AS5600_read = 1000;
 
 float AS5600_angle = 0;
 
-// Switches used for calibration
-int rightSwitchPressed = 0;
-int leftSwitchPressed = 0;
-float leftMaxValue;
-float rightMaxValue;
-
-// @todo - getting the id for the turbine by name for now, create the sensor, and create sensorLogs when turbine id and sensor id are fine
-
 void setup() {
   
   Serial.begin(115200);
@@ -34,15 +26,15 @@ void setup() {
   // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
-  /*
+  // Connect with the specific WiFi
   WiFi.begin(ssid, password);
 
+  // Check if ESP32 is connected successfully to the provided WiFi
   while(WiFi.status() != WL_CONNECTED){
     Serial.print(".");
     delay(500);
   }
 
-  */
   Serial.println("\nConnected to the Wifi network");
   
   // Initialize switches
@@ -53,10 +45,12 @@ void setup() {
   AS5600_connection_status(as5600);
 
   // Check the connection between wind turbine and serverAPI
-  //albert_connection_status(http);
+  albert_connection_status(http);
 
+  // Initialize TMC2209 driver for stepper motor
   initializeTMC2209(); 
 
+  // Initialize stepper motor
   initializeStepperMotor();
 
 }
@@ -74,8 +68,6 @@ void loop() {
     rotateStepperMotor(AS5600_angle);
   }
 }
-
-
 
 // Verifies communication with the AS5600.
 // Prints 'SUCCESS' if the magnetic encoder is detected.
@@ -149,67 +141,4 @@ bool AS5600_validate_data(uint16_t raw_angle) {
 void stopProcess() {
   Serial.println("Program executed");
   exit(0);
-}
-
-int isSwitchPressed(uint8_t pin) {
-
-  // Check whether the switch is pressed
-  int readSwitch = digitalRead(pin);
-
-  // If a switch is pressed, stop the rotor from moving
-  if (readSwitch == LOW) {
-    
-    Serial.println("\nMaximum angle reached.");
-    return 1;
-  }
-  return 0;
-
-}
-
-void initializeStepperMotor() {
-
-  // Move left until press the left switch, (indicates the maximum value)
-  while (!leftSwitchPressed) {
-
-    Serial.println(currentAngle);
-    // Make a circle in that direction until the max value is found
-    calibrateStepperMotor(360.0);
-
-    int leftSwitch = isSwitchPressed(SWITCH_LEFT_PIN);
-    
-    if (leftSwitch) {
-      leftSwitchPressed = 1;
-      leftMaxValue = currentAngle;
-    }
-  }
-
-  // Move right until press the right switch, (indicates the maximum value)
-  while (!rightSwitchPressed) {
-
-    Serial.println(currentAngle);
-
-    // Make a circle in that direction until the max value is found
-    calibrateStepperMotor(-360);
-
-    int rightSwitch = isSwitchPressed(SWITCH_RIGHT_PIN);
-    
-    if (rightSwitch) {
-      rightSwitchPressed = 1;
-      rightMaxValue = currentAngle;
-    }
-  }
-
-  if (currentAngle < 0) {
-    currentAngle += 360;
-  }
-  float startPoint = (leftMaxValue + rightMaxValue) / 2;
-
-  Serial.print("START POINT ");
-  Serial.println(startPoint);
-
-  while (abs(currentAngle - startPoint) >= 0.5) {
-    rotateStepperMotor(startPoint);
-  }
-  Serial.println(currentAngle);
-  resetCurrentAngle();
 }
