@@ -1,4 +1,10 @@
-#include "ALBERT_SWITCHES.h";
+#include "ALBERT_SWITCHES.h"
+
+// Initialize the switches (rotor's moving constraints)
+void initializeSwitches() {
+  pinMode(SWITCH_LEFT_PIN, INPUT_PULLUP);
+  pinMode(SWITCH_RIGHT_PIN, INPUT_PULLUP);
+}
 
 // Check whether a switch is pressed
 // @param pin switch's pin

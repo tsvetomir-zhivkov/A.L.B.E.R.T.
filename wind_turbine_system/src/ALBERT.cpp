@@ -3,19 +3,18 @@
 #include "ALBERT_API.h"
 #include "TMC2209.h"
 
-// Initializing all required variables.
-
+// Initialize all required variables.
 AS5600 as5600;
-
 HTTPClient http;
 
-// An error indicator
+// An error indicator (when success turns 0, terminate the process)
 bool success = 1;
 
-// parallel programming (non-blocking)
+// parallel programming variables (non-blocking)
 unsigned long lastMillisAS5600 = 0;
 const unsigned long AS5600_read = 1000;
 
+// Provided angle by the magnetic encoder AS5600
 float AS5600_angle = 0;
 
 void setup() {
@@ -26,6 +25,7 @@ void setup() {
   // Initialize the Wire library and joins the I2C bus as a controller
   Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
 
+  /*
   // Connect with the specific WiFi
   WiFi.begin(ssid, password);
 
@@ -37,15 +37,18 @@ void setup() {
 
   Serial.println("\nConnected to the Wifi network");
   
+  */
   // Initialize switches
   pinMode(SWITCH_LEFT_PIN, INPUT_PULLUP);
   pinMode(SWITCH_RIGHT_PIN, INPUT_PULLUP);
+
+  pinMode(36, INPUT);
 
   // Check the connection status.
   AS5600_connection_status(as5600);
 
   // Check the connection between wind turbine and serverAPI
-  albert_connection_status(http);
+  //albert_connection_status(http);
 
   // Initialize TMC2209 driver for stepper motor
   initializeTMC2209(); 
@@ -56,7 +59,13 @@ void setup() {
 }
 
 void loop() {
-
+  
+  /*
+  float value = analogRead(36);
+  long voltage = map(value, 0, 4095, 0, (int)maxValue);
+  Serial.printf("Voltage: %d\n", voltage);
+  delay(1000);
+  */
   // @todo success trigger, when success turns to 0, stop program
   if (success) {
 
@@ -65,8 +74,11 @@ void loop() {
       success = AS5600_readAngle(as5600);
       //success = writeMeasurement(http, as5600_id, AS5600_angle);
     }
+    //Serial.print("CURRENT ANGLE");
+    //Serial.println(currentAngle);
     rotateStepperMotor(AS5600_angle);
   }
+    
 }
 
 // Verifies communication with the AS5600.
@@ -106,6 +118,9 @@ bool AS5600_readAngle(AS5600 &as5600) {
     Serial.print("\nWind angle: ");
     Serial.println(wind_angle_degrees);
     AS5600_angle = wind_angle_degrees;
+
+    Serial.print("\nStepper Motor angle: ");
+    Serial.println(currentAngle);
     return 1;
   }
   else {
@@ -142,3 +157,5 @@ void stopProcess() {
   Serial.println("Program executed");
   exit(0);
 }
+
+//float mapVoltage()
