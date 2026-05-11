@@ -19,12 +19,6 @@ float AS5600_angle = 0;
 
 void setup() {
   
-  Serial.begin(115200);
-
-  
-  // Initialize the Wire library and joins the I2C bus as a controller
-  Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
-
   /*
   // Connect with the specific WiFi
   WiFi.begin(ssid, password);
@@ -36,37 +30,20 @@ void setup() {
   }
 
   Serial.println("\nConnected to the Wifi network");
-  
   */
-  // Initialize switches
-  pinMode(SWITCH_LEFT_PIN, INPUT_PULLUP);
-  pinMode(SWITCH_RIGHT_PIN, INPUT_PULLUP);
-
-  pinMode(36, INPUT);
-
   // Check the connection status.
   AS5600_connection_status(as5600);
 
   // Check the connection between wind turbine and serverAPI
   //albert_connection_status(http);
-
-  // Initialize TMC2209 driver for stepper motor
-  initializeTMC2209(); 
-
-  // Initialize stepper motor
-  initializeStepperMotor();
+  
+  initializeAlbert();
 
 }
 
 void loop() {
   
-  /*
-  float value = analogRead(36);
-  long voltage = map(value, 0, 4095, 0, (int)maxValue);
-  Serial.printf("Voltage: %d\n", voltage);
-  delay(1000);
-  */
-  // @todo success trigger, when success turns to 0, stop program
+  
   if (success) {
 
     if (millis() - lastMillisAS5600 >= AS5600_read) {
@@ -78,6 +55,14 @@ void loop() {
     //Serial.println(currentAngle);
     rotateStepperMotor(AS5600_angle);
   }
+    
+
+  /*
+  float h = readVoltage(36, VOLTAGE_SENSOR_MAX_VOLTAGE);
+  Serial.printf("Voltage provided %.1f V\n", h);
+
+  delay(1000);
+  */
     
 }
 
@@ -104,11 +89,12 @@ bool AS5600_readAngle(AS5600 &as5600) {
   // Reads the data provided by the magnetic encoder AS5600.
   uint16_t wind_angle = as5600.readAngle();
 
+  /*
   // Validate that AS5600 encoder is working correctly
   if (!AS5600_validate_data(wind_angle)) {
     stopProcess();
   }
-
+  */
   // Maps the data provided by the magnetic encoder AS5600 (raw data -> angle).
   float wind_angle_degrees = wind_angle * AS5600_RAW_TO_DEGREES;
 
@@ -158,4 +144,41 @@ void stopProcess() {
   exit(0);
 }
 
-//float mapVoltage()
+
+
+////////////////////////////////////////////
+//            VOLTAGE SENSOR              //
+////////////////////////////////////////////
+
+float readVoltage(uint8_t pin, float maxVoltage) {
+
+  // Read analog data from the provided pin
+  uint16_t data = analogRead(pin);
+
+  Serial.println(data);
+  // Map the analog input to a voltage value
+  float voltage = (data/ESP32_MAX_ANALOG_VALUE) * maxVoltage;
+  
+  // Return the result + error value
+  return voltage * 1.028;
+}
+
+
+////////////////////////////////////////////
+//            INITIALIZATION              //
+////////////////////////////////////////////
+
+void initializeAlbert() {
+
+  Serial.begin(115200);
+
+  // Initialize the Wire library and joins the I2C bus as a controller
+  Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
+  
+  initializeSwitches();
+  initializeTMC2209();
+  initializeStepperMotor();
+
+  // Initialize the voltage sensor
+  pinMode(VOLTAGE_SENSOR_PIN, INPUT);
+}

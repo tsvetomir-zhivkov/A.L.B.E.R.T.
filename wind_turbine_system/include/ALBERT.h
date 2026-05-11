@@ -12,11 +12,12 @@
 #define AS5600_MIN_ANGLE 0
 
 // Voltage sensor
-#define R1 1
-#define R2 1
-#define ESP32_MAX_VOLTAGE 3.3
-#define ESP32_MAX_ANALOG_VALUE 4095
-#define VOLTAGE_SENSOR_MAX_VOLTAGE ESP32_MAX_VOLTAGE *((R1 + R2) / R2) 
+#define VOLTAGE_SENSOR_PIN 36
+#define R1 1000.0
+#define R2 1800.0
+#define ESP32_MAX_VOLTAGE 3.319
+#define ESP32_MAX_ANALOG_VALUE 4095.0
+#define VOLTAGE_SENSOR_MAX_VOLTAGE ESP32_MAX_VOLTAGE * ((R1 + R2) / R2) 
 
 // Error handling
 #define READING_ERROR 10
@@ -43,4 +44,7 @@ int isSwitchPressed(uint8_t pin);
 void initializeStepperMotor();
 
 void stopProcess();
+
+void initializeAlbert();
+float readVoltage(uint8_t pin, float maxVoltage);
 #endif

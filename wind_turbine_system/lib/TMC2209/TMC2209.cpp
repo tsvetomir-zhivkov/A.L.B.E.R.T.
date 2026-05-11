@@ -51,7 +51,6 @@ void initializeStepperMotor() {
     int rightSwitch = isSwitchPressed(SWITCH_RIGHT_PIN);
     
     if (rightSwitch) {
-      Serial.println("PRESSED");
       rightSwitchPressed = 1;
       rightOffset = currentOffset;
     }
@@ -74,6 +73,7 @@ void initializeStepperMotor() {
   leftMaxAngle = convertToAngle(leftMaxOffset);
   rightMaxAngle = convertToAngle(rightMaxOffset);
 
+  Serial.printf("LEFT: %f, RIGHT: %f", leftMaxAngle, rightMaxAngle);
   // Reset the status of the switches
   leftSwitchPressed = 0;
   rightSwitchPressed = 0;
@@ -86,32 +86,6 @@ void initializeStepperMotor() {
 // Rotate the stepper motor using pulses
 // @param targetAngle the angle provided by AS5600 magnetic encoder. Angle range 0-360 degrees.
 void rotateStepperMotor(float targetAngle) {
-
-    if (targetAngle < leftMaxAngle && targetAngle > rightMaxAngle) {
-        
-        if (currentAngle < leftMaxAngle && currentAngle > rightMaxAngle) {
-            Serial.println("MAXED ANGLE REACHED!");
-            /*float zoneMiddlePoint = ((leftMaxAngle + rightMaxAngle)/2);
-            targetAngle = (currentAngle <= zoneMiddlePoint) ? rightMaxAngle : leftMaxAngle;*/
-        }
-    }
-    /*
-    // Check whether the targetAngle is in the danger zone
-    if (leftMaxAngle >= targetAngle && targetAngle <= rightMaxAngle) {
-        float zoneMiddlePoint = ((leftMaxAngle + rightMaxAngle) / 2) - 180;
-        targetAngle = (targetAngle <= zoneMiddlePoint) ? leftMaxAngle : rightMaxAngle;
-    }
-    */
-    // Check whether a switch is pressed during rotation
-    /*
-    if (leftSwitchPressed) {
-        leftMaxAngle = currentAngle;
-    }
-
-    if (rightSwitchPressed) {
-        rightMaxAngle = currentAngle;
-    }
-    */
 
     // Calculate the offset from the current stepper motor's position
     float angleOffset = calculateOffset(&targetAngle);
@@ -162,11 +136,11 @@ float calculateOffset(float *targetAngle) {
 
     // Check in which zone is the target angle
     // Left zone (before triggering left switch)
-    if (*targetAngle >= 0 && *targetAngle < leftMaxAngle) {
+    if (*targetAngle >= 0 && *targetAngle < rightMaxAngle) {
         targetZone = LEFT_ZONE;
     }
     // Right zone (before triggering right switch)
-    else if (*targetAngle > rightMaxAngle && *targetAngle <= 360) {
+    else if (*targetAngle > leftMaxAngle && *targetAngle <= 360) {
         targetZone = RIGHT_ZONE;
     }
     // Danger zone (between switches)
@@ -174,14 +148,16 @@ float calculateOffset(float *targetAngle) {
         // Check which constrain is closer to the target angle
         float middlePoint = (leftMaxAngle + rightMaxAngle) / 2;
         if (*targetAngle >= middlePoint) {
-            *targetAngle = rightMaxAngle;
+            *targetAngle = leftMaxAngle;
             targetZone = RIGHT_ZONE;
         }
         else {
-            *targetAngle = leftMaxAngle;
+            *targetAngle = rightMaxAngle;
             targetZone = LEFT_ZONE;
         }
     }
+
+    //printf("TARGET ANGLE: %f\n", *targetAngle);
 
     // Check in which zone is the stepper motor's current angle (assuming that the current position cannot be in the danger zone)
     if (currentAngle >= 0 && currentAngle < leftMaxAngle) {
