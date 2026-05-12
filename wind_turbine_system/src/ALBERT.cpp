@@ -12,14 +12,15 @@ bool success = 1;
 
 // parallel programming variables (non-blocking)
 unsigned long lastMillisAS5600 = 0;
-const unsigned long AS5600_read = 1000;
+const unsigned long AS5600_read = 2000;
+unsigned long lastMillisVoltage = 0;
+const unsigned long voltage_read = 3000;
 
 // Provided angle by the magnetic encoder AS5600
 float AS5600_angle = 0;
 
 void setup() {
   
-  /*
   // Connect with the specific WiFi
   WiFi.begin(ssid, password);
 
@@ -29,13 +30,13 @@ void setup() {
     delay(500);
   }
 
-  Serial.println("\nConnected to the Wifi network");
-  */
+  Serial.println("\nConnected to the Wifi network\n");
+  
+  // Check the connection between wind turbine and serverAPI
+  albert_connection_status(http);
+
   // Check the connection status.
   AS5600_connection_status(as5600);
-
-  // Check the connection between wind turbine and serverAPI
-  //albert_connection_status(http);
   
   initializeAlbert();
 
@@ -43,27 +44,27 @@ void setup() {
 
 void loop() {
   
-  
   if (success) {
 
+    // Send voltage data to the server
+    if (millis() - lastMillisVoltage >= voltage_read) {
+      lastMillisVoltage = millis();
+      // Send generator and battery data to the server
+      success = writeMeasurement(http, generatorV_id, readVoltage(VOLTAGE_SENSOR_PIN, VOLTAGE_SENSOR_MAX_VOLTAGE));
+      success = writeMeasurement(http, battery_id, readVoltage(BATTERY_SENSOR_PIN, BATTERY_SENSOR_MAX_VOLTAGE));
+    }
+    
     if (millis() - lastMillisAS5600 >= AS5600_read) {
       lastMillisAS5600 = millis();
+      // Send AS5600 and stepper motor data to the server
       success = AS5600_readAngle(as5600);
-      //success = writeMeasurement(http, as5600_id, AS5600_angle);
+      success = writeMeasurement(http, as5600_id, AS5600_angle);
+      success = writeMeasurement(http, stepper_motor_id, currentAngle);
     }
-    //Serial.print("CURRENT ANGLE");
-    //Serial.println(currentAngle);
+
     rotateStepperMotor(AS5600_angle);
-  }
     
-
-  /*
-  float h = readVoltage(36, VOLTAGE_SENSOR_MAX_VOLTAGE);
-  Serial.printf("Voltage provided %.1f V\n", h);
-
-  delay(1000);
-  */
-    
+  } 
 }
 
 // Verifies communication with the AS5600.
@@ -155,12 +156,15 @@ float readVoltage(uint8_t pin, float maxVoltage) {
   // Read analog data from the provided pin
   uint16_t data = analogRead(pin);
 
-  Serial.println(data);
   // Map the analog input to a voltage value
   float voltage = (data/ESP32_MAX_ANALOG_VALUE) * maxVoltage;
   
   // Return the result + error value
-  return voltage * 1.028;
+  return voltage;
+}
+
+int batteryCapacity(float voltage) {
+  return (voltage/BATTERY_CAPACITY)*100;
 }
 
 

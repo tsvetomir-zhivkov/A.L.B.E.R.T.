@@ -3,14 +3,15 @@
 #include <math.h>
 
 float currentOffset = 0;
-float currentAngle = 0;
+// float currentAngle = 0;
+int currentAngle = 0;
 bool direction = HIGH;
 
 // Switches used for calibration
 int rightSwitchPressed = 0;
 int leftSwitchPressed = 0;
 // Constraints in the zones of the rotor's moving range (circle)
-float leftMaxAngle, rightMaxAngle;
+int leftMaxAngle, rightMaxAngle;
 
 // Initialize stepper motor driver tmc2209
 void initializeTMC2209() {
@@ -73,7 +74,7 @@ void initializeStepperMotor() {
   leftMaxAngle = convertToAngle(leftMaxOffset);
   rightMaxAngle = convertToAngle(rightMaxOffset);
 
-  Serial.printf("LEFT: %f, RIGHT: %f", leftMaxAngle, rightMaxAngle);
+  Serial.printf("LEFT: %f, RIGHT: %f\n", leftMaxAngle, rightMaxAngle);
   // Reset the status of the switches
   leftSwitchPressed = 0;
   rightSwitchPressed = 0;
@@ -86,6 +87,32 @@ void initializeStepperMotor() {
 // Rotate the stepper motor using pulses
 // @param targetAngle the angle provided by AS5600 magnetic encoder. Angle range 0-360 degrees.
 void rotateStepperMotor(float targetAngle) {
+
+    // Check whether a switch is pressed while moving
+    // If pressed, change the current moving constraint
+    if (isSwitchPressed(SWITCH_LEFT_PIN)) {
+        // Modify the max angle only once. The switch may be pressed for a longer time.
+        if (!leftSwitchPressed) {
+            leftMaxAngle = currentAngle;
+            leftSwitchPressed = 1;
+            Serial.printf("New left constraint: %f\n", leftMaxAngle);
+        }
+    }
+    else {
+        leftSwitchPressed = 0;
+    }
+    
+    // Right switch
+    if (isSwitchPressed(SWITCH_RIGHT_PIN)) {
+        if (!rightSwitchPressed) {
+            rightMaxAngle = currentAngle;
+            rightSwitchPressed = 1;
+            Serial.printf("New right constraint: %f\n", rightMaxAngle);
+        }
+    }
+    else {
+        rightSwitchPressed = 0;
+    }
 
     // Calculate the offset from the current stepper motor's position
     float angleOffset = calculateOffset(&targetAngle);
@@ -184,7 +211,7 @@ float calculateOffset(float *targetAngle) {
 // Convert the provided offset to a positive angle in range 0-360 degrees
 // @param offset either positive or negative offset
 // @return the converted angle in range 0-360 degrees
-float convertToAngle(float offset) {
+int convertToAngle(float offset) {
 
     // Map the offset in range -360 - 360 degrees
     offset = fmod(offset, 360.0f);
@@ -194,7 +221,7 @@ float convertToAngle(float offset) {
         offset += 360;
     }
 
-    return offset;
+    return (int)offset;
 }
 
 // Calibrate the stepper motor (this function works the same way as rotateStepperMotor() function).

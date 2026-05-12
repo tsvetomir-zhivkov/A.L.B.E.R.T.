@@ -10,7 +10,9 @@ uint16_t albert_id = 4;
 
 // Sensors
 uint16_t as5600_id = 1;
-uint16_t stepper_motor_id = 2;
+uint16_t generatorV_id = 3;
+uint16_t battery_id = 4;
+uint16_t stepper_motor_id = 5;
 
 bool albert_connection_status(HTTPClient &http) {
 
@@ -34,11 +36,22 @@ bool albert_connection_status(HTTPClient &http) {
     bool verification_status_sm = verifySensor(http, stepper_motor_id);
 
     if (!verification_status_sm) {
-        Serial.println("\nVerification error (stepper_motor)");
+        Serial.println("\nVerification error (stepper motor)");
     }
 
-    //@todo Fix server mode endpoint and database
-    Serial.println("Connection successful");
+    bool verification_status_generator = verifySensor(http, generatorV_id);
+
+    if (!verification_status_generator) {
+        Serial.println("\nVerification error (generator)");
+    }
+
+    bool verification_status_battery = verifySensor(http, battery_id);
+
+    if (!verification_status_battery) {
+        Serial.println("\nVerification error (battery)");
+    }
+
+    Serial.println("\nConnection successful\n");
     
     return 1;
 

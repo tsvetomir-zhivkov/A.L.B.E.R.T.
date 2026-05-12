@@ -24,10 +24,10 @@ void rotateStepperMotor(float angle);
 void calibrateStepperMotor(float angle);
 
 // Conversion functions
-float convertToAngle(float offset);
+int convertToAngle(float offset);
 float calculateOffset(float *targetAngle);
 
 
-extern float currentAngle;
+extern int currentAngle;
 
 #endif

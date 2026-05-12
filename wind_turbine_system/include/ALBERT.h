@@ -13,11 +13,18 @@
 
 // Voltage sensor
 #define VOLTAGE_SENSOR_PIN 36
-#define R1 1000.0
-#define R2 1800.0
+#define R1 2700.0
+#define R2 1000.0
 #define ESP32_MAX_VOLTAGE 3.319
 #define ESP32_MAX_ANALOG_VALUE 4095.0
 #define VOLTAGE_SENSOR_MAX_VOLTAGE ESP32_MAX_VOLTAGE * ((R1 + R2) / R2) 
+
+// Battery sensor
+#define BATTERY_SENSOR_PIN 4
+#define R1_B 1800.0
+#define R2_B 1000.0
+#define BATTERY_SENSOR_MAX_VOLTAGE ESP32_MAX_VOLTAGE * ((R1_B + R2_B) / R2_B)
+#define BATTERY_CAPACITY (6*1.45)
 
 // Error handling
 #define READING_ERROR 10
@@ -47,4 +54,5 @@ void stopProcess();
 
 void initializeAlbert();
 float readVoltage(uint8_t pin, float maxVoltage);
+int batteryCapacity(float voltage);
 #endif
