@@ -1,7 +1,8 @@
 #include "ALBERT_API.h"
 
-const char* ssid = "iPhone";
-const char* password = "dZ3g-kJJ1-VRpa-7F8B";
+const char* ssid = "A16 Testi";
+const char* password = "zsrjgci8gwixtmf";
+//const char* password = "dZ3g-kJJ1-VRpa-7F8B";
 
 String serverPath = "https://albert2026.azurewebsites.net/api";
 
@@ -293,6 +294,8 @@ bool writeMeasurement(HTTPClient &http, uint16_t sensorID, float sensor_measurem
     // Stringify the JSON object
     String httpRequestData = JSON.stringify(data);
 
+    Serial.println(httpRequestData);
+
     // Send HTTP request
     int httpResponseCode = http.POST(httpRequestData);
 
@@ -311,6 +314,8 @@ bool writeMeasurement(HTTPClient &http, uint16_t sensorID, float sensor_measurem
 
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
+        String payload = http.getString();
+        Serial.println(payload);
         Serial.println("Server error");
 
         return 0;

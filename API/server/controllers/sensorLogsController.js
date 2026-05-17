@@ -66,7 +66,7 @@ export const createOne = async (c) => {
     // Uses the provided data from the user
     const sensor = await c.req.json();
 
-    if (!sensor.measurement) {
+    if (sensor.measurement == null) {
         return c.json({message: "Missing sensor data"}, 400);
     }
 

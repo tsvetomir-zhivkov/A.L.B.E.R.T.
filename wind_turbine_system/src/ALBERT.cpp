@@ -20,6 +20,11 @@ const unsigned long voltage_read = 3000;
 float AS5600_angle = 0;
 
 void setup() {
+
+  Serial.begin(115200);
+
+  // Initialize the Wire library and joins the I2C bus as a controller
+  Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
   
   // Connect with the specific WiFi
   WiFi.begin(ssid, password);
@@ -50,16 +55,16 @@ void loop() {
     if (millis() - lastMillisVoltage >= voltage_read) {
       lastMillisVoltage = millis();
       // Send generator and battery data to the server
-      success = writeMeasurement(http, generatorV_id, readVoltage(VOLTAGE_SENSOR_PIN, VOLTAGE_SENSOR_MAX_VOLTAGE));
-      success = writeMeasurement(http, battery_id, readVoltage(BATTERY_SENSOR_PIN, BATTERY_SENSOR_MAX_VOLTAGE));
+      //success = writeMeasurement(http, generatorV_id, readVoltage(VOLTAGE_SENSOR_PIN, VOLTAGE_SENSOR_MAX_VOLTAGE));
+      //success = writeMeasurement(http, battery_id, batteryCapacity(readVoltage(BATTERY_SENSOR_PIN, BATTERY_SENSOR_MAX_VOLTAGE)));
     }
     
     if (millis() - lastMillisAS5600 >= AS5600_read) {
       lastMillisAS5600 = millis();
       // Send AS5600 and stepper motor data to the server
       success = AS5600_readAngle(as5600);
-      success = writeMeasurement(http, as5600_id, AS5600_angle);
-      success = writeMeasurement(http, stepper_motor_id, currentAngle);
+      //success = writeMeasurement(http, as5600_id, AS5600_angle);
+      //success = writeMeasurement(http, stepper_motor_id, currentAngle);
     }
 
     rotateStepperMotor(AS5600_angle);
@@ -173,11 +178,6 @@ int batteryCapacity(float voltage) {
 ////////////////////////////////////////////
 
 void initializeAlbert() {
-
-  Serial.begin(115200);
-
-  // Initialize the Wire library and joins the I2C bus as a controller
-  Wire.begin(AS5600_SDA_PIN, AS5600_SCL_PIN);
   
   initializeSwitches();
   initializeTMC2209();
@@ -185,4 +185,5 @@ void initializeAlbert() {
 
   // Initialize the voltage sensor
   pinMode(VOLTAGE_SENSOR_PIN, INPUT);
+  pinMode(BATTERY_SENSOR_PIN, INPUT);
 }

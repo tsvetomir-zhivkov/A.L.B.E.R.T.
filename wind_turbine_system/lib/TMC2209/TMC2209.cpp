@@ -34,26 +34,26 @@ void initializeStepperMotor() {
   // Move left until press the left switch, (indicates the maximum value)
   while (!leftSwitchPressed) {
     // Make a circle in that direction until the max value is found
-    calibrateStepperMotor(-360.0);
+    calibrateStepperMotor(360.0);
 
     int leftSwitch = isSwitchPressed(SWITCH_LEFT_PIN);
     
     if (leftSwitch) {
       leftSwitchPressed = 1;
-      leftOffset = currentOffset;
+      rightOffset = currentOffset;
     }
   }
 
   // Move right until press the right switch, (indicates the maximum value)
   while (!rightSwitchPressed) {
     // Make a circle in that direction until the max value is found
-    calibrateStepperMotor(360);
+    calibrateStepperMotor(-360);
 
     int rightSwitch = isSwitchPressed(SWITCH_RIGHT_PIN);
     
     if (rightSwitch) {
       rightSwitchPressed = 1;
-      rightOffset = currentOffset;
+      leftOffset = currentOffset;
     }
   }
 
@@ -74,7 +74,7 @@ void initializeStepperMotor() {
   leftMaxAngle = convertToAngle(leftMaxOffset);
   rightMaxAngle = convertToAngle(rightMaxOffset);
 
-  Serial.printf("LEFT: %f, RIGHT: %f\n", leftMaxAngle, rightMaxAngle);
+  Serial.printf("LEFT: %d, RIGHT: %d\n", leftMaxAngle, rightMaxAngle);
   // Reset the status of the switches
   leftSwitchPressed = 0;
   rightSwitchPressed = 0;
@@ -93,9 +93,9 @@ void rotateStepperMotor(float targetAngle) {
     if (isSwitchPressed(SWITCH_LEFT_PIN)) {
         // Modify the max angle only once. The switch may be pressed for a longer time.
         if (!leftSwitchPressed) {
-            leftMaxAngle = currentAngle;
+            rightMaxAngle = currentAngle;
             leftSwitchPressed = 1;
-            Serial.printf("New left constraint: %f\n", leftMaxAngle);
+            Serial.printf("New right constraint: %d\n", leftMaxAngle);
         }
     }
     else {
@@ -105,13 +105,13 @@ void rotateStepperMotor(float targetAngle) {
     // Right switch
     if (isSwitchPressed(SWITCH_RIGHT_PIN)) {
         if (!rightSwitchPressed) {
-            rightMaxAngle = currentAngle;
+            leftMaxAngle = currentAngle;
             rightSwitchPressed = 1;
-            Serial.printf("New right constraint: %f\n", rightMaxAngle);
+            Serial.printf("New left constraint: %d\n", rightMaxAngle);
         }
     }
     else {
-        rightSwitchPressed = 0;
+        rightSwitchPressed= 0;
     }
 
     // Calculate the offset from the current stepper motor's position
@@ -164,11 +164,11 @@ float calculateOffset(float *targetAngle) {
     // Check in which zone is the target angle
     // Left zone (before triggering left switch)
     if (*targetAngle >= 0 && *targetAngle < rightMaxAngle) {
-        targetZone = LEFT_ZONE;
+        targetZone = RIGHT_ZONE;
     }
     // Right zone (before triggering right switch)
     else if (*targetAngle > leftMaxAngle && *targetAngle <= 360) {
-        targetZone = RIGHT_ZONE;
+        targetZone = LEFT_ZONE;
     }
     // Danger zone (between switches)
     else {
@@ -176,30 +176,30 @@ float calculateOffset(float *targetAngle) {
         float middlePoint = (leftMaxAngle + rightMaxAngle) / 2;
         if (*targetAngle >= middlePoint) {
             *targetAngle = leftMaxAngle;
-            targetZone = RIGHT_ZONE;
+            targetZone = LEFT_ZONE;
         }
         else {
             *targetAngle = rightMaxAngle;
-            targetZone = LEFT_ZONE;
+            targetZone = RIGHT_ZONE;
         }
     }
 
     //printf("TARGET ANGLE: %f\n", *targetAngle);
 
     // Check in which zone is the stepper motor's current angle (assuming that the current position cannot be in the danger zone)
-    if (currentAngle >= 0 && currentAngle < leftMaxAngle) {
-        currentZone = LEFT_ZONE;
+    if (currentAngle >= 0 && currentAngle < rightMaxAngle) {
+        currentZone = RIGHT_ZONE;
     }
     // Right zone (before triggering right switch)
-    else if (currentAngle > rightMaxAngle && currentAngle <= 360) {
-        currentZone = RIGHT_ZONE;
+    else if (currentAngle > leftMaxAngle && currentAngle <= 360) {
+        currentZone = LEFT_ZONE;
     }
 
     // Calculate the offset (difference between target angle and stepper motor's current angle/position)
     if (targetZone == currentZone) {
-        return round((*targetAngle - currentAngle) * 2.0) / 2.0;
+        return round(*targetAngle - currentAngle);
     }
-    else if (targetZone > currentZone) {
+    else if (targetZone < currentZone) {
         return -((360-*targetAngle) + currentAngle);
     }
     else {
