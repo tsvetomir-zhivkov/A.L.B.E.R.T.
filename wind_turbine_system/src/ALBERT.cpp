@@ -55,16 +55,16 @@ void loop() {
     if (millis() - lastMillisVoltage >= voltage_read) {
       lastMillisVoltage = millis();
       // Send generator and battery data to the server
-      //success = writeMeasurement(http, generatorV_id, readVoltage(VOLTAGE_SENSOR_PIN, VOLTAGE_SENSOR_MAX_VOLTAGE));
-      //success = writeMeasurement(http, battery_id, batteryCapacity(readVoltage(BATTERY_SENSOR_PIN, BATTERY_SENSOR_MAX_VOLTAGE)));
+      writeMeasurement(http, generatorV_id, readVoltage(VOLTAGE_SENSOR_PIN, VOLTAGE_SENSOR_MAX_VOLTAGE));
+      writeMeasurement(http, battery_id, batteryCapacity(readVoltage(BATTERY_SENSOR_PIN, BATTERY_SENSOR_MAX_VOLTAGE)));
     }
     
     if (millis() - lastMillisAS5600 >= AS5600_read) {
       lastMillisAS5600 = millis();
       // Send AS5600 and stepper motor data to the server
-      success = AS5600_readAngle(as5600);
-      //success = writeMeasurement(http, as5600_id, AS5600_angle);
-      //success = writeMeasurement(http, stepper_motor_id, currentAngle);
+      AS5600_readAngle(as5600);
+      writeMeasurement(http, as5600_id, AS5600_angle);
+      writeMeasurement(http, stepper_motor_id, currentAngle);
     }
 
     rotateStepperMotor(AS5600_angle);

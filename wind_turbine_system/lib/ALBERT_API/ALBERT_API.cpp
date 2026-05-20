@@ -1,8 +1,8 @@
 #include "ALBERT_API.h"
 
-const char* ssid = "A16 Testi";
-const char* password = "zsrjgci8gwixtmf";
-//const char* password = "dZ3g-kJJ1-VRpa-7F8B";
+const char* ssid = "iPhone";
+//const char* password = "zsrjgci8gwixtmf";
+const char* password = "dZ3g-kJJ1-VRpa-7F8B";
 
 String serverPath = "https://albert2026.azurewebsites.net/api";
 

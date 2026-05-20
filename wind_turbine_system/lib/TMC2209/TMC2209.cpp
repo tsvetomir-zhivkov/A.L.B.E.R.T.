@@ -4,14 +4,14 @@
 
 float currentOffset = 0;
 // float currentAngle = 0;
-int currentAngle = 0;
+float currentAngle = 0;
 bool direction = HIGH;
 
 // Switches used for calibration
 int rightSwitchPressed = 0;
 int leftSwitchPressed = 0;
 // Constraints in the zones of the rotor's moving range (circle)
-int leftMaxAngle, rightMaxAngle;
+float leftMaxAngle, rightMaxAngle;
 
 // Initialize stepper motor driver tmc2209
 void initializeTMC2209() {
@@ -39,6 +39,7 @@ void initializeStepperMotor() {
     int leftSwitch = isSwitchPressed(SWITCH_LEFT_PIN);
     
     if (leftSwitch) {
+      Serial.print("Whs");
       leftSwitchPressed = 1;
       rightOffset = currentOffset;
     }
@@ -90,12 +91,13 @@ void rotateStepperMotor(float targetAngle) {
 
     // Check whether a switch is pressed while moving
     // If pressed, change the current moving constraint
+    /*
     if (isSwitchPressed(SWITCH_LEFT_PIN)) {
         // Modify the max angle only once. The switch may be pressed for a longer time.
         if (!leftSwitchPressed) {
-            rightMaxAngle = currentAngle;
             leftSwitchPressed = 1;
-            Serial.printf("New right constraint: %d\n", leftMaxAngle);
+            rightMaxAngle = currentAngle;
+            Serial.printf("New right constraint: %f\n", rightMaxAngle);
         }
     }
     else {
@@ -105,15 +107,15 @@ void rotateStepperMotor(float targetAngle) {
     // Right switch
     if (isSwitchPressed(SWITCH_RIGHT_PIN)) {
         if (!rightSwitchPressed) {
-            leftMaxAngle = currentAngle;
             rightSwitchPressed = 1;
-            Serial.printf("New left constraint: %d\n", rightMaxAngle);
+            leftMaxAngle = currentAngle;
+            Serial.printf("New left constraint: %f\n", leftMaxAngle);
         }
     }
     else {
         rightSwitchPressed= 0;
     }
-
+    */
     // Calculate the offset from the current stepper motor's position
     float angleOffset = calculateOffset(&targetAngle);
 
@@ -173,6 +175,7 @@ float calculateOffset(float *targetAngle) {
     // Danger zone (between switches)
     else {
         // Check which constrain is closer to the target angle
+        /*
         float middlePoint = (leftMaxAngle + rightMaxAngle) / 2;
         if (*targetAngle >= middlePoint) {
             *targetAngle = leftMaxAngle;
@@ -182,9 +185,23 @@ float calculateOffset(float *targetAngle) {
             *targetAngle = rightMaxAngle;
             targetZone = RIGHT_ZONE;
         }
-    }
+            */
 
-    //printf("TARGET ANGLE: %f\n", *targetAngle);
+        float distLeft =
+            abs(*targetAngle - leftMaxAngle);
+
+        float distRight =
+            abs(*targetAngle - rightMaxAngle);
+
+        if (distLeft < distRight) {
+            *targetAngle = leftMaxAngle;
+            targetZone = LEFT_ZONE;
+        }
+        else {
+            *targetAngle = rightMaxAngle;
+            targetZone = RIGHT_ZONE;
+        }
+    }
 
     // Check in which zone is the stepper motor's current angle (assuming that the current position cannot be in the danger zone)
     if (currentAngle >= 0 && currentAngle < rightMaxAngle) {
@@ -200,10 +217,10 @@ float calculateOffset(float *targetAngle) {
         return round(*targetAngle - currentAngle);
     }
     else if (targetZone < currentZone) {
-        return -((360-*targetAngle) + currentAngle);
+        return -((360.0f - *targetAngle) + currentAngle);
     }
     else {
-        return (360 - currentAngle) + *targetAngle;
+        return (360.0f - currentAngle) + *targetAngle;
     }
 
 }
@@ -211,7 +228,7 @@ float calculateOffset(float *targetAngle) {
 // Convert the provided offset to a positive angle in range 0-360 degrees
 // @param offset either positive or negative offset
 // @return the converted angle in range 0-360 degrees
-int convertToAngle(float offset) {
+float convertToAngle(float offset) {
 
     // Map the offset in range -360 - 360 degrees
     offset = fmod(offset, 360.0f);
@@ -221,7 +238,7 @@ int convertToAngle(float offset) {
         offset += 360;
     }
 
-    return (int)offset;
+    return offset;
 }
 
 // Calibrate the stepper motor (this function works the same way as rotateStepperMotor() function).
