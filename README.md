@@ -1,4 +1,4 @@
-# A.L.B.E.R.T. 
+# A.L.B.E.R.T. 🔋
 ## _"Aerodynamical Logical Brutal Electrical Rotating Turbine"_
 
 _A.L.B.E.R.T._ is a small-scale wind turbine with an automatically rotating nacelle and an integrated monitoring system.
