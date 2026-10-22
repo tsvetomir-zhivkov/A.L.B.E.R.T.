@@ -23,6 +23,7 @@ The configuration consists of two main components:
 * `Svelte`
 * `PostgreSQL`
 * `Docker`
+* 'Microsoft Azure'
 
 ## Control system
 The control system is responsible for real-time operation of the turbine. The core of A.L.B.E.R.T. is an ESP32 microcontroller.
